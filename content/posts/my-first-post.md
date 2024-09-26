@@ -6,5 +6,5 @@ draft: true
 
 # Header 1
 
-This is the text of my first post!
+This is the text of my *first* post!
 Which is quite exciting.
