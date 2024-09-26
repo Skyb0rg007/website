@@ -1,0 +1,4 @@
+baseURL: 'https://soss.website/'
+languageCode: 'en-us'
+title: "Skye's Blog"
+theme: ["github.com/theNewDynamic/gohugo-theme-ananke"]
