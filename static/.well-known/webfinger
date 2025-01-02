@@ -1,9 +1,33 @@
 {
-    "subject": "skye@soss.website",
-    "links": [
-        {
-            "rel": "http://openid.net/specs/connect/1.0/issuer",
-            "href": "https://auth.soss.website"
-        }
-    ]
+  "subject": "acct:skye@soss.website",
+  "aliases": [
+    "acct:skyesoss@mathstodon.xyz",
+    "https://mathstodon.xyz/@skyesoss",
+    "https://mathstodon.xyz/users/skyesoss"
+  ],
+  "links": [
+    {
+      "rel": "http://openid.net/specs/connect/1.0/issuer",
+      "href": "https://auth.soss.website"
+    },
+    {
+      "rel": "http://webfinger.net/rel/profile-page",
+      "href": "https://mathstodon.xyz/@skyesoss",
+      "type": "text/html"
+    },
+    {
+      "rel": "self",
+      "href": "https://mathstodon.xyz/users/skyesoss",
+      "type": "application/activity+json"
+    },
+    {
+      "rel": "http://ostatus.org/schema/1.0/subscribe",
+      "template": "https://mathstodon.xyz/authorize_interaction?uri={uri}"
+    },
+    {
+      "rel": "http://webfinger.net/rel/avatar",
+      "type": "image/png",
+      "href": "https://media.mathstodon.xyz/accounts/avatars/109/309/779/724/957/764/original/3df66c9e4a8f3cb7.png"
+    }
+  ]
 }
