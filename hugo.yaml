@@ -1,4 +1,36 @@
 baseURL: 'https://soss.website/'
 languageCode: 'en-us'
 title: "Skye's Blog"
-theme: ["github.com/theNewDynamic/gohugo-theme-ananke"]
+theme: ["github.com/gurusabarish/hugo-profile"]
+params:
+  author:
+    name: Skye Soss
+  achievements:
+    enable: false
+  about:
+    enable: false
+    title: About Me
+    image: null
+    content: |
+      This is the about me content
+  skills:
+    enable: false
+    title: Skills
+    items:
+      - |
+        Item 1
+      - |
+        Item 2
+  education:
+    enable: false
+    items:
+      - date: null
+        title: PhD Student
+        school:
+          name: University of Chicago
+          url: https://uchicago.edu/
+      - title: Undergraduate
+        school:
+          name: Tufts University
+          url: https://tufts.edu/
+      
