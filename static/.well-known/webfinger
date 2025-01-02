@@ -1,6 +1,7 @@
 {
   "subject": "acct:skye@soss.website",
   "aliases": [
+    "acct:@skye@soss.website",
     "acct:skyesoss@mathstodon.xyz",
     "https://mathstodon.xyz/@skyesoss",
     "https://mathstodon.xyz/users/skyesoss"
