@@ -2,11 +2,14 @@ baseURL: 'https://soss.website/'
 languageCode: 'en-us'
 title: "Skye's Blog"
 theme: ["github.com/gurusabarish/hugo-profile"]
+
+enableRobotsTXT: true
+
 markup:
   goldmark:
     renderer:
       unsafe: true
-# sectionPagesMenu: main
+
 menus:
   main:
     - identifier: blog
@@ -14,29 +17,89 @@ menus:
       title: Blog posts
       url: /blog
       weight: 1
+
 footer:
   socialNetworks:
     github: https://github.com/Skyb0rg007
     linkedin: https://linkedin.com
     twitter: https://twitter.com
+
+# https://github.com/gurusabarish/hugo-profile/blob/master/exampleSite/config.yaml
+
 params:
+  title: Skye's Blog
+  description: A place for writing my ideas
+  useBootstrapCDN: false
+  # Enable per-page via frontmatter
+  mathjax: false
+
+  # Fade-in homepage
+  animate: true
+
+  font:
+    # These are the defaults
+    fontSize: 1rem
+    fontWeight: 400
+    lineHeight: 1.5
+    textAlign: left
+
   navbar:
     align: mx-auto
+    disableSearch: true
     brandLogo: ~
     brandName: Skye
+    menus:
+      disableEducation: false
+
+  hero:
+    enable: true
+    intro: Hy, my name is
+    title: Skye.
+    subtitle: I write code for compilers
+    socialLinks:
+      fontAwesomeIcons:
+        - icon: fab fa-github
+          url: https://github.com/Skyb0rg007
+        - icon: fab fa-x-twitter
+          url: https://x.com/Skyb0rg
+
   theme:
     disableThemeToggle: false
     defaultTheme: dark
+
+  projects:
+    enable: true
+    items:
+      - title: 3CPS Compiler
+        content: A research compiler aimed at efficient analysis with separate
+          compilation
+        featured:
+          name: SML/NJ
+          link: https://smlnj.org
+        badges:
+          - "Standard ML"
+        links:
+          - icon: fab fa-github
+            url: https://github.com/3cps-project
+      - title: Packages repo
+        content: A collection of software packaged for WinGet and Nix.
+        links:
+          - icon: fab fa-github
+            url: https://github.com/Skyb0rg007/packages
+
   author:
     name: Skye Soss
+
   achievements:
     enable: false
+
   about:
     enable: false
     title: About Me
     image: null
     content: |
       This is the about me content
+
   skills:
     enable: false
     title: Skills
@@ -45,6 +108,7 @@ params:
         Item 1
       - |
         Item 2
+
   education:
     enable: false
     items:

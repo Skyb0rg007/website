@@ -489,7 +489,28 @@ The database file is an unencrypted list of revoked certificates.
 As we will see in next step, revoking a certificate will just add
 an entry to this file.
 
-# Step 4a: Revoking a certificate
+# Step 4a: distributing the CRL
+
+If you're doing server authentication, you should host the CRL on your
+local website, and have it updated every week.
+
+If you're doing client authentication, you can have your CRL live much
+longer, and manually update it when needed.
+Example Nginx config:
+
+```nginx
+server {
+  # Could maybe use `ssl_trusted_certificate` instead: see docs
+  ssl_client_certificate /etc/nginx/client_cert.pem;
+  ssl_crl /etc/nginx/client_crl.pem;
+  # Could also use `ssl_verify_client: optional` along with $ssl_client_verify
+  # This makes it possible to only deny certain paths.
+  ssl_verify_client on;
+  ssl_verify_depth 1;
+}
+```
+
+# Step 4b: Revoking a certificate
 
 ```bash
 $ openssl ca -revoke bob_crt.pem -cert int_crt.pem -keyfile int_key.pem -out int.crl \
@@ -521,6 +542,118 @@ you do discover evidence of compromise,
 you should update the revocation reason to keyCompromise.
 The other reasons are irrelevant for a self-hosted CA.
 
+# Revocation management options
+
+Computers use certificates to determine that data comes from who the device
+says it does.
+Certificates have a limited lifetime to help ensure that guarentee is up-to-date,
+but what if the certificate is lost or taken out of service before the
+renewal date?
+
+This is where revocation comes in.
+Because certificates are entirely offline, there's no way to validate if
+something has changed between the issuing of the cert and now.
+CRLs and OCSP servers are methods for a CA to serve information about a
+certificate's validity via HTTP, and a validator can query these online
+servers to have more updated knowledge of the cert status.
+
+This works quite well for client certificates.
+Let's say you protect a subdomain (ex. `auth.example.com`) via mTLS,
+and you require clients to provide a signed certificate along with
+their requests.
+If you lose your phone, you can issue a new certificate for your new phone
+and should also prevent that lost certificate from being considered valid.
+You add the public key of the lost certificate to OpenSSL's certificate
+database with the revocation mark.
+Then you have the intermediate CA sign that database and distribute it to
+your webservers.
+The signed database is the CRL.
+Then whenever a client tries to authenticate, the webserver ensures that the
+certificate is signed and valid, and then also that it does not appear on this
+revocation list.
+
+It also works well for other X.509 certificate uses such as
+code signing certificates.
+An attacker signing malicious code requires a compromise of the certificate,
+and the attacker intercepting web traffic is a different attack vector.
+
+Problems arise when it comes to validating server certificates.
+In the client example, the revocation list exists on the same machine
+as the validator, so it will always be up-to-date.
+In the code-signing example, the revocation list is queried using a different
+method than the malicious executable is.
+In the server example, the revocation list is queried using the same
+underlying protocol as the website data itself.
+The browser or other application will send an HTTP request to the URL
+listed in the certificate, and use the response as authoritative.
+HTTP requests failing is not usually a serious error condition,
+and browsers implement *soft-failure*: if a CRL is not available the
+connection is considered valid.
+
+The reason we use server certificates in HTTPS is for server validation.
+If you connect to a café Wi-Fi and visit `google.com`, this ensures that
+you are actually talking to Google and not someone else.
+An attempt to redirect the `google.com` domain somewhere else would fail
+at certificate validation, as the other location will not have a valid cert.
+
+Let's say Google's domain certificate key gets leaked online.
+Google adds the public key to their CRL at http://c.pki.goog/path/to/revokes.crl,
+and re-issues their certificate.
+The attacker then sets up their own fake `google.com` using this leaked
+certificate and has the Wi-Fi's DNS records point to this fake website.
+They also point http://c.pki.goog (and http://o.pki.goog) to their own IP
+address that just doesn't answer any requests.
+
+You connect to the fake website, get the revoked cert, and then send a request
+to validate it.
+Since the attacker controls the Wi-Fi and DNS your CRL (or OCSP) request
+will go unanswered, and due to soft-failure be accepted.
+HTTPS averted.
+This problem discussed in [this blog post][revchecking-blog] which I highly
+recommend reading.
+
+The best solution is to just use short-lived certificates.
+CA/Browser forum even has a definition:
+A short-lived subscriber certificate is one that is valid for 7 days or less.
+When the validity is that short, the CA is allowed to omit CRL and OCSP links.
+
+If you don't want to run an ACME server, you can run a CA server
+with your constrained intermediate certificate and use something
+as basic as a password to regenerate the certificates.
+Here's a simple Bash script that does that:
+
+```bash
+
+declare -A passwords
+passwords[app1.home.arpa]=""
+passwords[app2.home.arpa]=""
+
+case "$1" in
+    generate)
+        domain="$2"
+        pass="$(openssl rand -base64 80)"
+        digest="$(openssl kdf -keylen 32 -kdfopt salt:"$domain" \
+            -kdfopt memcost:9216 -kdfopt iter:4 -kdfopt lanes:1 \
+            -kdfopt pass:"$pass" ARGON2ID)"
+        echo "Password: $pass"
+        echo "Digest: $digest"
+        ;;
+esac
+
+```
+
+Something you do want to worry about a little bit is your intermediate CA
+becoming compromised.
+If you don't want to restart from scratch and create a new root CA,
+an attacker with control of your network -- ex. a café public Wi-Fi --
+can potentially spoof *other* websites such as `google.com`.
+This is why the instructions above recommend setting up a
+*Technically Constrained TLS Subordinate Certificate Authority*, so that
+even if your intermediate certificate is lost the worst that can happen
+is `google.lan` can be spoofed.
+If you're using an unroutable tld like `.home.arpa` this only degrades to
+"as insecure as http" which I assume you've been using beforehand just fine.
+
 # What am I leaving out?
 
 Precertificates and the Signed Certificate Timestamp List:
@@ -546,3 +679,4 @@ Again, this is only relevant when you have a lot of revoked certificates.
 [actalis]: https://www.actalis.com
 [openpgp]: https://keys.openpgp.org
 [freetsa]: https://freeTSA.org
+[revchecking-blog]: https://www.imperialviolet.org/2014/04/19/revchecking.html
