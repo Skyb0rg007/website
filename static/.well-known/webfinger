@@ -22,10 +22,6 @@
       "type": "application/activity+json"
     },
     {
-      "rel": "http://ostatus.org/schema/1.0/subscribe",
-      "template": "https://mathstodon.xyz/authorize_interaction?uri={uri}"
-    },
-    {
       "rel": "http://webfinger.net/rel/avatar",
       "type": "image/png",
       "href": "https://media.mathstodon.xyz/accounts/avatars/109/309/779/724/957/764/original/3df66c9e4a8f3cb7.png"

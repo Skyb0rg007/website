@@ -2,7 +2,31 @@ baseURL: 'https://soss.website/'
 languageCode: 'en-us'
 title: "Skye's Blog"
 theme: ["github.com/gurusabarish/hugo-profile"]
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+# sectionPagesMenu: main
+menus:
+  main:
+    - identifier: blog
+      name: Blog
+      title: Blog posts
+      url: /blog
+      weight: 1
+footer:
+  socialNetworks:
+    github: https://github.com/Skyb0rg007
+    linkedin: https://linkedin.com
+    twitter: https://twitter.com
 params:
+  navbar:
+    align: mx-auto
+    brandLogo: ~
+    brandName: Skye
+  theme:
+    disableThemeToggle: false
+    defaultTheme: dark
   author:
     name: Skye Soss
   achievements:
@@ -33,4 +57,4 @@ params:
         school:
           name: Tufts University
           url: https://tufts.edu/
-      
+
