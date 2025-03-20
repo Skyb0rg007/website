@@ -1,6 +1,6 @@
 ---
 title: 'Creating a Certificate Authority with OpenSSL'
-date: 2025-01-10T19:08:39-06:00
+date: null
 draft: true
 ---
 
