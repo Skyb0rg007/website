@@ -8,19 +8,24 @@ draft: true
 
 Setting up an X.509 certificate authority can be a great way to authenticate
 traffic with your homelab.
-Good uses are:
+Here are a few uses, in order from most useful to least useful:
 
-1. Mutual TLS (mTLS). Distribute a signed certificate to client devices
-like your laptop and phone, and have your server verify the client before
-any data is transfered.
+1. [Mutual <abbr title="Transport Layer Security">TLS</abbr> (mTLS)][mutual-tls].
+Distribute a signed certificate to client devices like your laptop and phone,
+and have your server verify the client before any data is transfered.
+This can be an alternative to <abbr title="Virtual Private Network">VPN</abbr>
+setups like Wireguard, because the certificate provides authentication
+alongside authorization.
+For example, the object store [MinIO][minio] supports attaching access
+policies to client certificates, allowing one to manage token lifetimes
+outside of MinIO.
 
-2. Using HTTPS on internal domains.
-If you don't own a domain name, or want to visit `https://pi.hole`,
-you can't use Let's Encrypt to get the required certificates.
-After installing your root certificate, a device's browser will
-display the lock like any other website.
-If you do own a domain, consider whether Let's Encrypt and `*.in.your.tld`
-domains suits your purposes before continuing.
+2. Using <abbr title="Hypertext Transport Protocol Secure">HTTPS</abbr> on internal domains.
+If you don't own a domain name, or want to access your [Pi Hole][pi-hole]
+via `https://pi.hole`, you can't rely on using Let's Encrypt certificates.
+Instead you can sign a certificate with your own authority and manually install
+the root onto your devices.
+The browsers should then accept the website like any other[^https-note].
 
 3. Multiple TLS identities on the same device.
 Let's Encrypt certificates certify that the domain is owned by you, but nothing
@@ -33,19 +38,29 @@ one per domain. <!-- Determine truth -->
 Using your own CA will still cause a popup for users who have not installed
 your root certificate into the trusted store, but the name of the cert
 will appear on the prompt.
-X.509 certificates can also be used with WDAC policies to lock down a desktop
+X.509 certificates can also be used with
+<abbr title="Windows Defender Application Control">WDAC</abbr>
+policies to lock down a desktop
 while maintaining Administrator priviledges, or for signing directories
 for whitelisting software installations.
+
+5. Using HTTPS with IP addresses.
+You can use a self-signed certificate to access `https://192.168.0.123`
+by signing a certificate with a IP address subject instead of
+a domain name.
+I have no clue why you would want to do this.
 
 Think twice if all you want to use your CA to do is the following:
 
 1. HTTPS with your public domain.
 [Let's Encrypt](https://letsencrypt.org) is a free service that provides
 certificates which are already trusted in all major browsers.
-You can run the acme client once a month to update the certificate,
-which makes this even more secure than what I will be showing
-because I'm assuming you're not going to setup your own acme server
-and just run the `openssl` command once a year.
+If you own a domain, there's no reason not to utilize this service when
+it suits your purposes.
+<!-- You can run an ACME client once a month to update the certificate, -->
+<!-- which makes this even more secure than what I will be showing -->
+<!-- because I'm assuming you're not going to setup your own acme server -->
+<!-- and just run the `openssl` command once a year. -->
 
 2. SSH Certificates.
 I would highly recommend setting up SSH certificate-based authentication,
@@ -60,15 +75,21 @@ exposing it to the internet.
 3. S/MIME email encryption.
 Companies such as [Castle Cloud][castle-cloud]
 and [Actalis][actalis] offer free S/MIME certificates.
-Your certificate authority will be even less trustworthy than these services.
-Uploading a PGP key to [OpenPGP][openpgp] can serve a similar
-purpose, though I would recommend S/MIME if that's an option.
-If you want to sign Git commits, I would recommend SSH keys over S/MIME and PGP.
+Signing an email with you own certificate authority is likely worse than
+doing nothing, as the receiver may see a warning message about the untrusted
+signature.
+If you want to avoid centralized authorities, you can upload a PGP key to
+a [key server][openpgp] to serve a similar purpose of signing/encryption.
+If you want to sign Git commits, I would recommend SSH keys or PGP over S/MIME.
 
 4. Trusted timestamping.
 There are free trusted timestamping websites such as [freeTSA][freetsa].
-Maybe there's a usecase for performing trusted timestamps locally,
-but you can't beat the guarentees of a third party.
+You can't beat the guarentees of a third party.
+
+<!-- ```bash -->
+<!-- $ openssl ts -query -data ./my-file.pdf -no_nonce -sha512 -cert -out ./my-file.tsq -->
+<!-- $ curl -H "Content-Type: application/timestamp-query" --data-binary @my-file.tsq https://freetsa.org/tsr > ./my-file.tsr -->
+<!-- ``` -->
 
 There are a bunch of tutorials on how to use `openssl` to create certificates
 and sign them, but none seem to be updated for the modern versions of
@@ -680,3 +701,7 @@ Again, this is only relevant when you have a lot of revoked certificates.
 [openpgp]: https://keys.openpgp.org
 [freetsa]: https://freeTSA.org
 [revchecking-blog]: https://www.imperialviolet.org/2014/04/19/revchecking.html
+[mutual-tls]: https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/ "What is mutual TLS?"
+[minio]: https://blog.min.io/certificate-based-authentication-with-s3/ "MinIO Certificate Authentication"
+
+[^https-note]: Edge will still display a broken lock, but won't popup a warning message.
