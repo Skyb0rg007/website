@@ -10,9 +10,3 @@ indent_style = space
 
 [*.nix]
 indent_size = 2
-
-[static/.well-known/openpgpkey/**]
-end_of_line =
-trim_trailing_whitespace = false
-insert_final_newline = false
-charset = binary
